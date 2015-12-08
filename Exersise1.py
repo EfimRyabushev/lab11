@@ -1,235 +1,132 @@
-#Абстрактный класс для реализации аксиом линейного пространства, позволяет сократить определение различных операций.
+def zipWith(one, two):
+    assert(len(two) == len(one))
+    a = 0
+    for i in range(len(one)):
+       a += one[i] * two[i]
+    return a
+
 class LinearSpace():
-      def __radd__(self, other):
-          return self + other
-      
-      def __iadd__(self, other):
-          return self + other
-       
-      def __sub__(self, other):
-          return self + other.augment(-1)
-      
-      def __rsub__(self, other):
-         return other - self
+    def __radd__(self, other):
+        return self + other
 
-#Класс для представления матриц, он умеет складывать, умножать на число, перемножать, транспонировать, вычислять определитель матриц.
+    def __iadd__(self, other):
+        return self + other
+
+    def __sub__(self, other):
+        return self + (-1)*other
+
+    def __rsub__(self, other):
+       return other - self
+
+    def __truediv(self, other):
+        assert(isinstance(other, type(1)) or isinstance(other, type(0.1)))
+        return self * (other ** (-1))
+
 class Matrix(LinearSpace):
-      def __init__(self, matrix:
-          self.matrix = matrix
-      
-      def size(self):
-          return (len(self.matrix), len(self.matrix[0]))
-      
-      def get(self, i, j):
-          return self.matrix[i][j]
-      
-      def augment(self, number):
-          size = self.size
-          matrix = [[None for j in range(size[1])] for i in range size[0]]
-          for i in range(size[0]):
-              for j in range(size[1]):
-                  matrix[i][j] = number * self.get(i, j)
-          return Matrix(matrix)
+    def __init__(self, m, n = None):
+        if isinstance(n, type(None)):
+            assert (isinstance(m, type([[1,2]])))
+            self.matrix = m
+        else:
+            condition = isinstance(m, type(1)) and isinstance(n, type(1))
+            assert (condition)
+            assert (m > 0 and n > 0)
+            self.matrix = [[None for j in range(n)] for i in  range(m)]
 
-      def __add__(self, other):
-          if self.size == other.size:
-             size = self.size
-             matrix = [[None for j in range(size[1])] for i in range size[0]]
-             for i in range(size[0]):
-                for j in range(size[1]):
-                    matrix[i][j] = self.get(i, j) + other.get(i, j)
-             return Matrix(matrix)
-          else:
-             raise Exception, 'Wrong Size'
-      
-      def __mul__(self, other):
-          if self.size[1] == other.size[0]:
-             matrix = [[None for j in range(other.size[1]] for i in range(self.size[0])]
-             for i in range(self.size[0]):
-                 for j in range(other.size[1]):
-                     colum = []
-                     for q in range(other.size[1]):
-                           colum.append(other.get(j, q))
-                     string = self.matrix[i]
-                     matrix[i][j] = sum ([q*k for q in string for k in colum])
-             return Matrix(matrix)
-          else:
-             raise Exception, 'Wrong Size'
-   
-      
-      def transpose(self):
-          size = self.size
-          transp = [[self.get(i,j) for i in range(size[0])] for j in range(size[1])]
-          return Matrix(transp)
-      
-      def minor(self, x, y):
-          size = self.size
-          matrix = [[self.get(i,j) for j in range(size[1]) if j != y] for i in range(size[0]) if i != x]
-          return Matrix(matrix)
-      
-      def determinate(self):
-          size = self.size
-          if size[0] == size[1] and size[0] == 1:
-             return self.get(0, 0)
-          elif size[0] == size[1] and size[0] != 1:
-              answer = 0
-              for i in range size(0):
-                 answer += ((-1) ** i) * self.minor(0, i).determinate()
-              return answer
-          else:
-              raise Exception, 'Wrong Size'
+    def output(self):
+        for i in range(self.get_m()):
+            print (self.get_line(i))
 
-#Класс векторов, определены линейные операции, скалярное и векторное произведения. Размерность пространства произвольная.
+
+    def get_m(self):
+        return len(self.matrix)
+
+    def get_n(self):
+        return len(self.matrix[0])
+
+    def get_size(self):
+        return (self.get_n(), self.get_m())
+
+    def get(self, i, j):
+        return self.matrix[i][j]
+
+    def get_line(self, i):
+        return self.matrix[i]
+
+    def get_colum(self, j):
+        colum = [self.get(i, j) for i in range(self.get_m())]
+        return colum
+
+    def set(self, i, j, value):
+        self.matrix[i][j] = value
+
+    def __eq__(self, other):
+        assert(isinstance(other, type(self)))
+        assert(self.get_size() == other.get_size())
+        for i in range(self.get_m()):
+            for j in range(self.get_n()):
+                if self.get(i, j) != other.get(i, j):
+                    return False
+        return True
+
+    def __add__(self, other):
+        assert(isinstance(other, type(self)))
+        assert(self.get_size() == other.get_size)
+        m = self.get_m()
+        n = self.get_n()
+        matrix = [[self.get(i, j) + other.get(i, j) for j in range(n)] for i in range(m)]
+        return Matrix(matrix)
+
+    def __mul__(self, other):
+        if isinstance(other, type(1)) or isinstance(other, type(0.1)):
+           matrix = [[other * self.get(i, j) for j in range(self.get_n())] for i in range(self.get_m())]
+           return Matrix(matrix)
+        elif isinstance(other, type(self)):
+            m = self.get_m()
+            k = other.get_n()
+            matrix = [[zipWith(self.get_line(i), other.get_colum(j)) for j in range(k)] for i in range(m)]
+            return Matrix(matrix)
+
+    def minor(self, x, y):
+        minor = [[self.get(i,j) for j in range(self.get_n()) if j != y] for i in range(self.get_m()) if i != x]
+        return Matrix(minor)
+
+    def determinant(self):
+        assert (self.get_m() == self.get_n())
+        if self.get_size() == (1, 1):
+           return self.get(0, 0)
+        else:
+          answer = 0
+          for i in range(self.get_m()):
+              minor = self.minor(0, i)
+              answer += ((-1) ** i) * minor.determinant()
+          return answer
+
+    def algebraicaddition(self, i, j):
+        minor = self.minor(i, j)
+        return (-1 ** (i + j)) * minor.determinant()
+
+    def transpose(self):
+        matrix = [[self.get(i, j) for i in range(self.get_m())] for j in range(self.get_n())]
+        return Matrix(matrix)
+
+    def invert(self):
+        allymatrix = [[self.algebraicaddition(i, j) for j in range(self.get_n())] for i in range(self.get_m())]
+        return allymatrix / self.determinant()
+
+
 class Vector(LinearSpace):
-      def __init__(self, coordinates):
-          self.coordinates = Matrix(coordinates)
- 
-      def augment(self, number):
-          vector = Vector(self.coordinates.augment(number))
-          return vector
-
-      def __add__(self, other):
-          vector = Vector(self.coordinates + other.coordinates)
-          return vector
-      
-      def scalarmul(self, other):
-          column = other.coordinates.transpose()
-          line = self.coordinates
-          return (line * column)[0][0]
-      
-      def length(self):
-          return (self.scalarmul(self)) ** 0.5
-      
-      def vectormul(self,other):
-          size = self.coordinates.size()
-          matrix = Matrix([None] * size[1], self.coordinates[0], other.coordinate[0]])
-          coordinates = [[matrix.minor(0, i).determinate()] for i in range(size[1])]
-          return Vector(coordinates)
-
-#Искомый класс точек, полностью завязан на классе вектор.
-class Point():
-      def __init__(self, string):
-         coordinates = list (map (float, string.split(',')))
-         self.x = coordinates[0]
-         self.y = coordinates[1]
-
-      def __str__(self):
-          return str(self.x) + ' ' + str(self.y)
-
-      def shift(self, other):
-          x = other.x - self.x
-          y = other.y - self.y
-          return Vector([[x,y]])
-
-      def radiusvector(self):
-          O = Point('0, 0')
-          return O.shift(self)
-
-      def distance(self, other):
-          return self.shift(other).length()
-      
-      def comparedistance(self,other, operator):
-          start = Point('0, 0')
-          return operator(self.distance(start), other.disnance(other))
-     
-     def __lt__(self, other):
-         return self.comparedistance(other, float.__lt__)
-
-     def __le__(self, other):
-         return self.comparedistance(other, float.__le__)
-
-     def __eq__(self, other):
-         return self.comparedistance(other, float.__eq__)
-
-     def __ne__(self, other):
-         return self.comparedistance(other, float.__ne__)
-
-     def __gt__(self, other):
-         return self.comparedistance(other, float.__gt__)
-
-     def __ge__(self, other):
-         return self.comparedistance(other, float.__ge__)
-     
-
-def exersise2():
-    n = int(input())
-    points = []
-    for i in range(n):
-        point.append(Point(input()))
-    return points.sort()[-1]
-
-def exersise3():
-    n = int(input())
-    points = []
-    for i in range(n):
-        point.append(Point(input()))
-    for i in points:
-        i = i.radiusvector
-    centermass = sum (points) / len(points)
-
-def exersise4():
-    n = int(input())
-    points = []
-    for i in range(n):
-        point.append(Point(input()))
-    
-    
-         
- 
-      
-           
-           
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    def __init__(self, coordinates):
+        self.coordinates = Matrix(coordinates)
+
+    def getcoordinates(self):
+        return self.coordinates
+
+    def __mul__(self, other):
+        if isinstance(other, type(1)) or isinstance(other, type(0.1)):
+            coordinates = self.getcoordinates() * other
+            return Vector(coordinates)
+        elif isinstance(other, type(self)):
+            answer = self.getcoordinates() * other.getcoordinates().transpose()
+            return answer.get(0, 0)
+        
