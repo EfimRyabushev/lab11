@@ -46,6 +46,10 @@ class ball():
             self.vx = -self.vx
         elif self.y in [600, 0]:
             self.vy = -self.vy
+        elif hittest(self, t1):
+            t1.hit()
+
+        self.set_coords()
 
     def hittest(self,ob):
         #""" Функция проверяет сталкивалкивается ли данный обьект с целью, описываемой в обьекте ob.
